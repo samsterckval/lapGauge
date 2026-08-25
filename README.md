@@ -3,13 +3,28 @@
 **Work in progress.** This is an early-stage skeleton, not a finished
 firmware - expect missing features, rough edges, and pins/config that
 haven't been validated against real hardware yet (see "Things I couldn't
-verify" below). It currently gets a QSPI display bring-up working with one
-label rendered via LVGL; touch, audio, IMU, and RTC are not wired up yet.
+verify" below). It currently gets a QSPI display bring-up working with a
+QMI8658 accelerometer readout rendered as a ball on screen; touch, audio,
+and RTC are not wired up yet.
 
 Minimal ESP-IDF project: I2C + TCA9554 expander bring-up, QSPI ST77916 panel
-init, LVGL 9 wired in via esp_lvgl_port, one label on screen. No touch, audio,
-IMU, or RTC yet - that's the next layer to build once you've confirmed the
-display path works.
+init, LVGL 9 wired in via esp_lvgl_port, and a QMI8658 accelerometer readout
+(`main/imu/`) driving a ball that moves/resizes with acceleration. No touch,
+audio, or RTC yet - that's the next layer to build once you've confirmed the
+display and IMU paths work.
+
+### IMU readout (`main/imu/`)
+
+- `IAccelerometerSensor` is the driver interface; `Qmi8658Sensor` is the only
+  implementation today. Swap in a different chip by writing a new class
+  against that interface - nothing else in `main/imu/` needs to change.
+- `AccelerometerData` holds the latest raw and EMA-filtered sample and knows
+  nothing about the sensor driver or the display.
+- `BallView` renders a sample as a ball and knows nothing about where the
+  data came from.
+- `ImuService` owns the polling task that ties the three together.
+- Tunables (poll rate, EMA window, max-g range, ball sizing) all live in
+  `main/imu/imu_config.hpp`.
 
 ## Build
 
@@ -65,6 +80,15 @@ Exit the serial monitor with `Ctrl+]`.
   straight from the wiki's internal hardware connection table. Worth
   confirming against the schematic PDF once, since "EXIO2" in Waveshare's
   docs isn't always literally bit 2 on every board revision.
+- **QMI8658 I2C address**: set to `0x6B` (`main/pins.h`), which matches
+  Waveshare's published address for this board family, but the schematic's
+  pin table doesn't show the SA0 strap directly - if the chip never ACKs on
+  the bus, try `0x6A`.
+- **QMI8658 axis orientation**: `main/imu/ball_view.cpp` maps accel X/Y
+  directly to screen X/Y and accel Z to ball size, with no assumption about
+  mounting orientation. Depending on how the chip is oriented on the PCB,
+  you may want to swap or negate an axis so "tilt right" actually moves the
+  ball right - that's a one-line change in `BallView::update`.
 
 ## About this project
 

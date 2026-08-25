@@ -21,6 +21,12 @@
 #define PIN_I2C_SCL    10
 #define PIN_I2C_SDA    11
 
+// --- QMI8658 IMU (I2C, shares the bus above) ---
+// 0x6B matches Waveshare's published address for this board family; SA0
+// strapping isn't visible in the schematic pin table, so if the chip never
+// ACKs, try 0x6A instead.
+#define QMI8658_I2C_ADDR   0x6B
+
 // --- TCA9554 I/O expander ---
 #define TCA9554_I2C_ADDR   0x20
 #define EXIO_TP_RST         1   // bit 1 -> touch reset

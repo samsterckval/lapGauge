@@ -8,6 +8,8 @@
 #include "esp_log.h"
 #include "pins.h"
 #include "tca9554.h"
+#include "imu/imu_ui.h"
+#include "debug_ui.h"
 
 static const char *TAG = "main";
 
@@ -85,7 +87,7 @@ static esp_lcd_panel_handle_t init_display(esp_lcd_panel_io_handle_t *out_io_han
     return panel_handle;
 }
 
-static void init_lvgl_and_demo_ui(esp_lcd_panel_handle_t panel_handle, esp_lcd_panel_io_handle_t io_handle)
+static void init_lvgl_and_ui(esp_lcd_panel_handle_t panel_handle, esp_lcd_panel_io_handle_t io_handle)
 {
     const lvgl_port_cfg_t lvgl_cfg = ESP_LVGL_PORT_INIT_CONFIG();
     ESP_ERROR_CHECK(lvgl_port_init(&lvgl_cfg));
@@ -102,11 +104,15 @@ static void init_lvgl_and_demo_ui(esp_lcd_panel_handle_t panel_handle, esp_lcd_p
     };
     lv_display_t *disp = lvgl_port_add_disp(&disp_cfg);
 
+    debug_ui_start(disp);
+
     lvgl_port_lock(0);
-    lv_obj_t *label = lv_label_create(lv_display_get_screen_active(disp));
-    lv_label_set_text(label, "Hello, 1.85\" round LCD");
-    lv_obj_center(label);
+    lv_obj_t *screen = lv_display_get_screen_active(disp);
     lvgl_port_unlock();
+
+    if (!imu_ui_start(s_i2c_bus, screen)) {
+        ESP_LOGE(TAG, "IMU init failed - no ball display");
+    }
 }
 
 void app_main(void)
@@ -119,5 +125,5 @@ void app_main(void)
     esp_lcd_panel_handle_t panel = init_display(&io_handle);
 
     ESP_LOGI(TAG, "starting LVGL");
-    init_lvgl_and_demo_ui(panel, io_handle);
+    init_lvgl_and_ui(panel, io_handle);
 }
