@@ -1,0 +1,29 @@
+# ESP-IDF build output
+build/
+build_*/
+
+# ESP-IDF component manager - fetched sources, not source of truth
+# (main/idf_component.yml + dependencies.lock are what's tracked)
+managed_components/
+
+# Generated full config - sdkconfig.defaults is the tracked source of truth,
+# `idf.py set-target`/reconfigure regenerates this per developer/board
+sdkconfig
+sdkconfig.old
+sdkconfig.bak
+
+# In case anything ever gets configured outside build/ by accident
+CMakeCache.txt
+CMakeFiles/
+
+# Editor / IDE - contains machine-specific absolute paths (see idf-env.sh),
+# not portable across contributors' machines
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
