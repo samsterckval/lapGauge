@@ -14,3 +14,9 @@ CONFIG_ESP_CONSOLE_USB_CDC=y
 
 # QSPI LCD DMA transfers benefit from a higher SPI clock ceiling
 CONFIG_LCD_ENABLE_DEBUG_LOG=n
+
+# LVGL's own redraw timer defaults to 33ms (~30Hz), which caps display
+# refresh below what the QSPI bus (40MHz, 4-wide) and small per-frame
+# redraws (a moving ball, not the full screen) can actually sustain.
+# 20ms raises that cap to 50Hz.
+CONFIG_LV_DEF_REFR_PERIOD=20
